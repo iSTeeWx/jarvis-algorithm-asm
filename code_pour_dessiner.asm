@@ -245,6 +245,25 @@ boucle: ; Boucle de gestion des événements
 ;#########################################
 dessin:
 
+  ; Changer la couleur de dessin
+	mov rdi,qword[display_name]
+	mov rsi,qword[gc]
+	mov edx,0x000000 ; black
+	call XSetForeground
+
+  ; draw evevry point
+  xor rbx,rbx
+  while_draw_points:
+    cmp rbx,POINT_COUNT
+    jge end_while_draw_points
+
+    call draw_circle
+
+    inc rbx
+    jmp while_draw_points
+  end_while_draw_points:
+
+
 ; ; Changer la couleur de dessin
 ; 	mov rdi,qword[display_name]
 ; 	mov rsi,qword[gc]
@@ -334,24 +353,6 @@ dessin:
 	call XDrawLine
 	add rsp,8
 ; Fin Dessin d'une ligne
-
-  ; Changer la couleur de dessin
-	mov rdi,qword[display_name]
-	mov rsi,qword[gc]
-	mov edx,0x000000 ; black
-	call XSetForeground
-
-  ; draw evevry point
-  xor rbx,rbx
-  while_draw_points:
-    cmp rbx,POINT_COUNT
-    jge end_while_draw_points
-
-    call draw_circle
-
-    inc rbx
-    jmp while_draw_points
-  end_while_draw_points:
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
