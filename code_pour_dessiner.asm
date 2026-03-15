@@ -86,17 +86,18 @@ get_rand_int:
   ret
 
 ; draws a circle based on the values stored in points_x points_y
-; param: rbx: the index of the circle to draw
+; param: edi: x pos
+; param: esi: y pos
 draw_circle:
+  mov ecx,edi ; coodonnée en X
+  sub ecx,3
+
+  mov r8d,esi ; coodonnée en Y
+  sub r8d,3
+
   mov rdi,qword[display_name]
   mov rsi,qword[window]
   mov rdx,qword[gc]
-
-  mov rcx,[points_x+rbx*DWORD] ; coodonnée en X
-  sub rcx,3
-
-  mov r8,[points_y+rbx*DWORD] ; coodonnée en Y
-  sub r8,3
 
   mov  r9,6
   mov  rax,23040
@@ -384,18 +385,6 @@ dessin:
   mov edx,0x000000 ; black
   call XSetForeground
 
-  ; draw every point
-  xor rbx,rbx
-  while_draw_points:
-    cmp rbx,POINT_COUNT
-    jge end_while_draw_points
-
-    call draw_circle
-
-    inc rbx
-    jmp while_draw_points
-  end_while_draw_points:
-
   ; draw lines between all points of H
   xor ebx,ebx
   while_draw_lines:
@@ -423,6 +412,21 @@ dessin:
   mov r12d,dword[point_set_H+ebx*DWORD]
   mov r13d,dword[point_set_H+0*DWORD]
   call draw_line
+
+  ; draw every point
+  xor rbx,rbx
+  while_draw_points:
+    cmp rbx,POINT_COUNT
+    jge end_while_draw_points
+
+    mov edi,dword[points_x+rbx*DWORD]
+    mov esi,dword[points_y+rbx*DWORD]
+    call draw_circle
+
+    inc rbx
+    jmp while_draw_points
+  end_while_draw_points:
+
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
