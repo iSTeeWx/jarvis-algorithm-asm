@@ -38,7 +38,7 @@ extern printf
 %define	LARGEUR 400	; largeur en pixels de la fenêtre
 %define HAUTEUR 400	; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 10
+%define POINT_COUNT 5
 
 global main
 
@@ -57,6 +57,7 @@ points_y:     resd POINT_COUNT
 point_set_H: resd POINT_COUNT
 point_Pi: resd 1
 point_Qi: resd 1
+point_Ii: resd 1
 
 section .data
 event: times 24 dq 0
@@ -64,10 +65,13 @@ x1: dd 0
 x2: dd 0
 y1: dd 0
 y2: dd 0
+
 printf_debug: db "point %u: %u %u",10,0
 printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
 printf_debug_jarvis_q: db "point Q is: (i:%u x:%u y:%u)",10,0
 printf_debug_leftmost: db 10,"leftmost point: i=%u x=%u",10,0
+printf_debug_point_i: db "point I: %u",10,0
+
 window_title: db "Algorithme de Jarvis",0
 
 leftmost_point_i: dd 0
@@ -265,6 +269,7 @@ main:
       div ecx
       mov dword[point_Qi],edx ; point_Qi = (Pi+1) % sz
 
+      ; print the info of Q
       mov rdi,printf_debug_jarvis_q
       mov esi,dword[point_Qi]
       mov edx,dword[point_Qi]
@@ -273,6 +278,32 @@ main:
       mov ecx,dword[points_y+ecx*DWORD]
       xor rax,rax
       call printf
+
+
+      mov dword[point_Ii],0
+      foreach_i:
+        mov eax,dword[point_Ii]
+        ; break when we reach the end
+        cmp eax,POINT_COUNT
+        jge end_foreach_i
+
+        ; continue if I is Q
+        cmp eax,dword[point_Qi]
+        je continue_foreach_i
+
+        ; continue if I is P
+        cmp eax,dword[point_Pi]
+        je continue_foreach_i
+
+        mov rdi,printf_debug_point_i
+        mov esi,dword[point_Ii]
+        xor rax,rax
+        call printf
+
+        continue_foreach_i:
+        inc dword[point_Ii]
+        jmp foreach_i
+      end_foreach_i:
 
       mov eax,dword[point_Pi]
       cmp dword[leftmost_point_i],eax
