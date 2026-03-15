@@ -384,7 +384,7 @@ dessin:
  mov edx,0x000000 ; black
  call XSetForeground
 
-  ; draw evevry point
+  ; draw every point
   xor rbx,rbx
   while_draw_points:
     cmp rbx,POINT_COUNT
