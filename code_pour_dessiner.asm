@@ -61,7 +61,11 @@ x2: dd 0
 y1: dd 0
 y2: dd 0
 printf_debug: db "point %u: %u %u",10,0
+printf_debug_leftmost: db 10,"leftmost point: i=%u x=%u",10,0
 window_title: db "Algorithme de Jarvis",0
+
+leftmost_point_i: dd 0
+leftmost_point_x: dd LARGEUR
 
 section .text
 
@@ -179,9 +183,9 @@ main:
     jz closeDisplay              ; Si échec, quitte
     mov qword[gc], rax           ; Stocke le GC dans la variable gc
 
-    mov rbx,0
+    mov ebx,0
     while_init_points:
-      cmp rbx,POINT_COUNT
+      cmp ebx,POINT_COUNT
       jge end_while_init_points
 
       mov rcx,LARGEUR-80                   ; the max of the random (-80 to account for padding)
@@ -204,9 +208,22 @@ main:
       mov rax,0
       call printf
 
-      inc rbx
+      mov eax,dword[points_x+rbx*DWORD]
+      cmp eax,dword[leftmost_point_x]
+      jge skip_point
+         mov dword[leftmost_point_x],eax
+         mov dword[leftmost_point_i],ebx
+      skip_point:
+
+      inc ebx
       jmp while_init_points
     end_while_init_points:
+
+    mov rdi,printf_debug_leftmost
+    mov esi,dword[leftmost_point_i]
+    mov edx,dword[leftmost_point_x]
+    xor rax,rax
+    call printf
 	
 boucle: ; Boucle de gestion des événements
     mov     rdi, qword[display_name]
