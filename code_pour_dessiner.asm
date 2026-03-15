@@ -379,10 +379,10 @@ main:
 dessin:
 
   ; Changer la couleur de dessin
- mov rdi,qword[display_name]
- mov rsi,qword[gc]
- mov edx,0x000000 ; black
- call XSetForeground
+  mov rdi,qword[display_name]
+  mov rsi,qword[gc]
+  mov edx,0x000000 ; black
+  call XSetForeground
 
   ; draw every point
   xor rbx,rbx
