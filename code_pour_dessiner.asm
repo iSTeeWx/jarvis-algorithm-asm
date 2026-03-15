@@ -62,6 +62,29 @@ y2: dd 0
 printf_debug: db "point %u: %u %u",10,0
 
 section .text
+
+; rbx: the index of the circle to draw
+draw_circle:
+  ; Dessin d'un point sous forme de petit rond
+  mov rdi,qword[display_name]
+  mov rsi,qword[window]
+  mov rdx,qword[gc]
+
+  mov rcx,[points_x+rbx*DWORD] ; coodonnée en X
+  sub rcx,3
+
+  mov r8,[points_y+rbx*DWORD] ; coodonnée en Y
+  sub r8,3
+
+  mov r9,6
+  mov rax,23040
+  push rax
+  push 0
+  push r9
+  call XFillArc
+  add rsp,24
+  ; Fin de dessin d'un point sous forme de petit rond
+  ret
 	
 ;##################################################
 ;########### PROGRAMME PRINCIPAL ##################
@@ -101,7 +124,7 @@ main:
     mov     rcx,10                    ; position y de la fenêtre
     mov     r8,LARGEUR                ; largeur de la fenêtre
     mov     r9,HAUTEUR           	    ; hauteur de la fenêtre
-    push 0x000000                     ; couleur du fond (noir, 0x000000)
+    push 0xFFFFFF                     ; couleur du fond (noir, 0x000000)
     push 0x00FF00                     ; couleur de fond (vert, 0x00FF00)
     push 1                            ; épaisseur du bord
     call XCreateSimpleWindow          ; Appel de XCreateSimpleWindow
@@ -196,23 +219,23 @@ boucle: ; Boucle de gestion des événements
 ;#########################################
 dessin:
 
-; Changer la couleur de dessin
-	mov rdi,qword[display_name]
-	mov rsi,qword[gc]
-	mov edx,0x00FFFF	; Couleur du crayon
-	call XSetForeground
-; Fin Change la couleur de dessin
-
-	mov dword[x1],200
-	mov dword[y1],100
-; Dessin d'un point	
-	mov rdi,qword[display_name]
-	mov rsi,qword[window]
-	mov rdx,qword[gc]
-	mov ecx,dword[x1]	; coordonnée en x
-	mov r8d,dword[y1]	; coordonnée en y
-	call XDrawPoint
-; Fin Dessin d'un point
+; ; Changer la couleur de dessin
+; 	mov rdi,qword[display_name]
+; 	mov rsi,qword[gc]
+; 	mov edx,0x00FFFF	; Couleur du crayon
+; 	call XSetForeground
+; ; Fin Change la couleur de dessin
+;
+; 	mov dword[x1],200
+; 	mov dword[y1],100
+; ; Dessin d'un point	
+; 	mov rdi,qword[display_name]
+; 	mov rsi,qword[window]
+; 	mov rdx,qword[gc]
+; 	mov ecx,dword[x1]	; coordonnée en x
+; 	mov r8d,dword[y1]	; coordonnée en y
+; 	call XDrawPoint
+; ; Fin Dessin d'un point
 
 ; Changer la couleur de dessin
 	mov rdi,qword[display_name]
@@ -286,60 +309,23 @@ dessin:
 	add rsp,8
 ; Fin Dessin d'une ligne
 
-; Dessin d'un point sous forme de petit rond
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,200		; coodonnée en X
-sub ecx,3
-mov r8d,200		; coordonnée en Y
-sub r8d,3
-mov r9d,6
-mov rax,23040
-push rax
-push 0
-push r9
-call XFillArc
-add rsp,24
-; Fin de essin d'un point sous forme de petit rond
+  ; Changer la couleur de dessin
+	mov rdi,qword[display_name]
+	mov rsi,qword[gc]
+	mov edx,0x000000 ; black
+	call XSetForeground
 
-; Dessin d'un point sous forme de petit rond
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,300		; coodonnée en X
-sub ecx,3
-mov r8d,100		; coordonnée en Y
-sub r8d,3
-mov r9d,6
-mov rax,23040
-push rax
-push 0
-push r9
-call XFillArc
-add rsp,24
-; Fin de essin d'un point sous forme de petit rond
+  ; draw evevry point
+  xor rbx,rbx
+  while_draw_points:
+    cmp rbx,POINT_COUNT
+    jge end_while_draw_points
 
-; Dessin d'un point sous forme de petit rond
-mov rdi,qword[display_name]
-mov rsi,qword[window]
-mov rdx,qword[gc]
-mov ecx,100		; coodonnée en X
-sub ecx,3
-mov r8d,300		; coordonnée en Y
-sub r8d,3
-mov r9d,6
-mov rax,23040
-push rax
-push 0
-push r9
-call XFillArc
-add rsp,24
-; Fin de essin d'un point sous forme de petit rond
+    call draw_circle
 
-dessin2:
-
-
+    inc rbx
+    jmp while_draw_points
+  end_while_draw_points:
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
