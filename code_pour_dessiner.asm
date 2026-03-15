@@ -59,7 +59,7 @@ x1: dd 0
 x2: dd 0
 y1: dd 0
 y2: dd 0
-printf_debug: db "point: %lu %lu",10,0
+printf_debug: db "point %u: %u %u",10,0
 
 section .text
 	
@@ -86,7 +86,7 @@ main:
     jz      closeDisplay      ; Si échec, ferme le display et quitte
 
     ; Stocke le display ouvert dans la variable globale display_name
-    mov     [display_name], rax
+    mov     qword[display_name], rax
 
     ; Récupère la fenêtre racine (root window) du display
     mov     rdi,qword[display_name]   ; Place le display dans rdi
@@ -142,27 +142,33 @@ main:
       cmp rbx,POINT_COUNT
       jge end_while_init_points
 
+      ; generate random number
       rdrand r8
       jnc end_while_init_points ; CF=0 so the random value is invalid
 
+      ; generate random number
       rdrand r9
       jnc end_while_init_points ; CF=0 so the random value is invalid
 
+      ; store random % width in an array
       mov rax,r8
-      mov r12,LARGEUR
+      mov rcx,LARGEUR
       xor rdx,rdx
-      div r12
-      mov r12,rdx
+      div rcx
+      mov qword[points_x+rbx*DWORD],rdx
 
+      ; store random % height in an array
       mov rax,r9
-      mov r13,HAUTEUR
+      mov rcx,HAUTEUR
       xor rdx,rdx
-      div r13
-      mov r13,rdx
+      div rcx
+      mov qword[points_y+rbx*DWORD],rdx
 
+      ; print the point and its index
       mov rdi,printf_debug
-      mov rsi,r12
-      mov rdx,r13
+      mov esi,ebx
+      mov edx,dword[points_x+rbx*DWORD]
+      mov ecx,dword[points_y+rbx*DWORD]
       mov rax,0
       call printf
 
