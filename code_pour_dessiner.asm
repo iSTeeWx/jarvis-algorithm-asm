@@ -51,8 +51,8 @@ width:        resd 1
 height:       resd 1
 window:       resq 1
 gc:           resq 1
-points_x      resd POINT_COUNT
-points_y      resd POINT_COUNT
+points_x:     resd POINT_COUNT
+points_y:     resd POINT_COUNT
 
 section .data
 event: times 24 dq 0
