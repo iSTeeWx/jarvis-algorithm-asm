@@ -280,6 +280,7 @@ main:
       call printf
 
 
+      ; foreach I in E that is not P or Q
       mov dword[point_Ii],0
       foreach_i:
         mov eax,dword[point_Ii]
@@ -295,10 +296,26 @@ main:
         cmp eax,dword[point_Pi]
         je continue_foreach_i
 
+        ; print the info of I
         mov rdi,printf_debug_point_i
         mov esi,dword[point_Ii]
         xor rax,rax
         call printf
+
+        ; r10b=Xb
+        ; r11b=Yb
+        ; r12b=Xc
+        ; r13b=Yc
+        ; 
+        ; r13b-=r11b
+        ; r12b-=r10b
+        ; r11b-=Ya
+        ; r10b-=Xa
+        ; 
+        ; r10b *= r13b
+        ; r11b *= r12b
+        ; 
+        ; r11b -= r10b
 
         continue_foreach_i:
         inc dword[point_Ii]
