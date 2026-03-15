@@ -38,7 +38,7 @@ extern printf
 %define LARGEUR             400 ; largeur en pixels de la fenêtre
 %define HAUTEUR             400 ; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 40
+%define POINT_COUNT 100
 
 global main
 
@@ -325,7 +325,7 @@ main:
     
       ; if the triangle goes clockwise
       cmp eax,0
-      jl continue_foreach_i
+      jle continue_foreach_i
         ; Q <- I
         mov edx,dword[point_Ii]
         mov dword[point_Qi],edx
