@@ -25,18 +25,18 @@ extern printf
 %define ButtonPressMask 4
 %define MapNotify 19
 %define KeyPress 2
-%define ButtonPress		4
-%define Expose			12
-%define ConfigureNotify		22
+%define ButtonPress  4
+%define Expose   12
+%define ConfigureNotify  22
 %define CreateNotify 16
-%define QWORD	8
-%define DWORD	4
-%define WORD	2
-%define BYTE	1
-%define NBTRI	1
-%define BYTE	1
-%define	LARGEUR 400	; largeur en pixels de la fenêtre
-%define HAUTEUR 400	; hauteur en pixels de la fenêtre
+%define QWORD 8
+%define DWORD 4
+%define WORD 2
+%define BYTE 1
+%define NBTRI 1
+%define BYTE 1
+%define LARGEUR 400 ; largeur en pixels de la fenêtre
+%define HAUTEUR 400 ; hauteur en pixels de la fenêtre
 
 %define POINT_COUNT 40
 
@@ -113,7 +113,7 @@ draw_circle:
   add rsp,24
   ; Fin de dessin d'un point sous forme de petit rond
   ret
-	
+
 ; computes the cross product of AB and BC
 ; param: edi: index of point A
 ; param: esi: index of point B
@@ -144,11 +144,11 @@ draw_line:
   mov rdi,qword[display_name]
   mov rsi,qword[window]
   mov rdx,qword[gc]
-  mov ecx,dword[points_x+r12d*DWORD]	; coordonnée source en x
-  mov r8d,dword[points_y+r12d*DWORD]	; coordonnée source en y
-  mov r9d,dword[points_x+r13d*DWORD]	; coordonnée destination en x
+  mov ecx,dword[points_x+r12d*DWORD] ; coordonnée source en x
+  mov r8d,dword[points_y+r12d*DWORD] ; coordonnée source en y
+  mov r9d,dword[points_x+r13d*DWORD] ; coordonnée destination en x
   mov r14d,dword[points_y+r13d*DWORD]
-  push r14		; coordonnée destination en y
+  push r14  ; coordonnée destination en y
   call XDrawLine
   add rsp,8
   ret
@@ -161,7 +161,7 @@ main:
     ; Sauvegarde du registre de base pour préparer les appels à printf
     push    rbp
     mov     rbp, rsp
-	
+
     ; Récupère le nom du display par défaut (en passant NULL)
     xor     rdi, rdi          ; rdi = 0 (NULL)
     call    XDisplayName      ; Appel de la fonction XDisplayName
@@ -190,14 +190,14 @@ main:
     mov     rdx,10                    ; position x de la fenêtre
     mov     rcx,10                    ; position y de la fenêtre
     mov     r8,LARGEUR                ; largeur de la fenêtre
-    mov     r9,HAUTEUR           	    ; hauteur de la fenêtre
+    mov     r9,HAUTEUR                ; hauteur de la fenêtre
     push 0xFFFFFF                     ; couleur du fond (noir, 0x000000)
     push 0x00FF00                     ; couleur de fond (vert, 0x00FF00)
     push 1                            ; épaisseur du bord
     call XCreateSimpleWindow          ; Appel de XCreateSimpleWindow
 
-	  add rsp,24
-	  mov qword[window],rax           ; Stocke l'identifiant de la fenêtre créée dans window
+   add rsp,24
+   mov qword[window],rax           ; Stocke l'identifiant de la fenêtre créée dans window
 
     ; sets the windows title
     mov rdi,qword[display_name]
@@ -353,7 +353,7 @@ main:
 
       jmp while_jarvis
     end_while_jarvis:
-	
+
 boucle: ; Boucle de gestion des événements
     mov     rdi, qword[display_name]
     cmp     rdi, 0              ; Vérifie que le display est toujours valide
@@ -370,15 +370,15 @@ boucle: ; Boucle de gestion des événements
 
 
 ;#########################################
-;#		DEBUT DE LA ZONE DE DESSIN		 #
+;#  DEBUT DE LA ZONE DE DESSIN   #
 ;#########################################
 dessin:
 
   ; Changer la couleur de dessin
-	mov rdi,qword[display_name]
-	mov rsi,qword[gc]
-	mov edx,0x000000 ; black
-	call XSetForeground
+ mov rdi,qword[display_name]
+ mov rsi,qword[gc]
+ mov edx,0x000000 ; black
+ call XSetForeground
 
   ; draw evevry point
   xor rbx,rbx
@@ -436,6 +436,6 @@ closeDisplay:
     mov     rax,qword[display_name]
     mov     rdi,rax
     call    XCloseDisplay
-    xor	    rdi,rdi
+    xor     rdi,rdi
     call    exit
-	
+
