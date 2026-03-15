@@ -20,11 +20,11 @@ extern exit
 
 extern printf
 
-%define	StructureNotifyMask	131072
-%define KeyPressMask		1
-%define ButtonPressMask		4
-%define MapNotify		19
-%define KeyPress		2
+%define StructureNotifyMask 131072
+%define KeyPressMask 1
+%define ButtonPressMask 4
+%define MapNotify 19
+%define KeyPress 2
 %define ButtonPress		4
 %define Expose			12
 %define ConfigureNotify		22
@@ -38,7 +38,7 @@ extern printf
 %define	LARGEUR 400	; largeur en pixels de la fenêtre
 %define HAUTEUR 400	; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 3
+%define POINT_COUNT 40
 
 global main
 
@@ -68,10 +68,7 @@ y2: dd 0
 
 printf_debug: db "point %u: %u %u",10,0
 printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
-printf_debug_jarvis_q: db "point Q is: (i:%u x:%u y:%u)",10,0
 printf_debug_leftmost: db 10,"leftmost point: i=%u x=%u",10,0
-printf_debug_point_i: db "point I: %u",10,0
-printf_debug_cross_product: db "cross product of PI and IQ: %d",10,0
 
 window_title: db "Algorithme de Jarvis",0
 
@@ -138,6 +135,22 @@ cross_product:
 
   sub eax,r12d
 
+  ret
+
+; draw a line between two point indices
+; param: r12: index of first point
+; param: r13: index of second point
+draw_line:
+  mov rdi,qword[display_name]
+  mov rsi,qword[window]
+  mov rdx,qword[gc]
+  mov ecx,dword[points_x+r12d*DWORD]	; coordonnée source en x
+  mov r8d,dword[points_y+r12d*DWORD]	; coordonnée source en y
+  mov r9d,dword[points_x+r13d*DWORD]	; coordonnée destination en x
+  mov r14d,dword[points_y+r13d*DWORD]
+  push r14		; coordonnée destination en y
+  call XDrawLine
+  add rsp,8
   ret
 
 ;##################################################
@@ -293,17 +306,6 @@ main:
       div ecx
       mov dword[point_Qi],edx ; point_Qi = (Pi+1) % sz
 
-      ; print the info of Q
-      mov rdi,printf_debug_jarvis_q
-      mov esi,dword[point_Qi]
-      mov edx,dword[point_Qi]
-      mov edx,dword[points_x+edx*DWORD]
-      mov ecx,dword[point_Qi]
-      mov ecx,dword[points_y+ecx*DWORD]
-      xor rax,rax
-      call printf
-
-
       ; foreach I in E that is not P or Q
       mov dword[point_Ii],0
       foreach_i:
@@ -320,31 +322,34 @@ main:
         cmp eax,dword[point_Pi]
         je continue_foreach_i
 
-        ; print the info of I
-        mov rdi,printf_debug_point_i
-        mov esi,dword[point_Ii]
-        xor rax,rax
-        call printf
-
+        ; get the winding direction of triangle PIQ
         mov edi,dword[point_Pi]
         mov esi,dword[point_Ii]
         mov edx,dword[point_Qi]
         call cross_product
-
-        mov rdi,printf_debug_cross_product
-        mov esi,eax
-        xor rax,rax
-        call printf
+      
+        ; if the triangle goes clockwise
+        cmp eax,0
+        jl continue_foreach_i
+          ; Q <- I
+          mov edx,dword[point_Ii]
+          mov dword[point_Qi],edx
 
         continue_foreach_i:
         inc dword[point_Ii]
         jmp foreach_i
       end_foreach_i:
 
+      ; P <- Q
+      mov ecx,dword[point_Qi]
+      mov dword[point_Pi],ecx
+
+      inc dword[point_set_H_i]
+
+      ; if P==L we're done
       mov eax,dword[point_Pi]
       cmp dword[leftmost_point_i],eax
-      ; TODO: this is the wrong condition, put: jne end_while_jarvis ; P == L
-      je end_while_jarvis ; P == L
+      je end_while_jarvis
 
       jmp while_jarvis
     end_while_jarvis:
@@ -387,96 +392,33 @@ dessin:
     jmp while_draw_points
   end_while_draw_points:
 
+  ; draw lines between all points of H
+  xor ebx,ebx
+  while_draw_lines:
+    ; stop when ebx >= len(H) - 1
+    mov eax,dword[point_set_H_i]
+    dec eax
+    cmp ebx,eax
+    jge end_while_draw_lines
 
-; ; Changer la couleur de dessin
-; 	mov rdi,qword[display_name]
-; 	mov rsi,qword[gc]
-; 	mov edx,0x00FFFF	; Couleur du crayon
-; 	call XSetForeground
-; ; Fin Change la couleur de dessin
-;
-; 	mov dword[x1],200
-; 	mov dword[y1],100
-; ; Dessin d'un point	
-; 	mov rdi,qword[display_name]
-; 	mov rsi,qword[window]
-; 	mov rdx,qword[gc]
-; 	mov ecx,dword[x1]	; coordonnée en x
-; 	mov r8d,dword[y1]	; coordonnée en y
-; 	call XDrawPoint
-; ; Fin Dessin d'un point
+    ; eax : index of H+1
+    ; ebx : index of H
+    ; r12 : H[ebx]
+    ; r13 : H[ebx + 1]
+    mov eax,ebx
+    inc eax
+    mov r12d,dword[point_set_H+ebx*DWORD]
+    mov r13d,dword[point_set_H+eax*DWORD]
+    call draw_line
 
-; Changer la couleur de dessin
-	mov rdi,qword[display_name]
-	mov rsi,qword[gc]
-	mov edx,0xFF00FF	; Couleur du crayon (violet)
-	call XSetForeground
-; Fin Change la couleur de dessin
+    inc ebx
+    jmp while_draw_lines
+  end_while_draw_lines
 
-	mov dword[x1],100
-	mov dword[y1],100
-	mov dword[x2],200
-	mov dword[y2],150
-; Dessin d'une ligne
-	mov rdi,qword[display_name]
-	mov rsi,qword[window]
-	mov rdx,qword[gc]
-	mov ecx,dword[x1]	; coordonnée source en x
-	mov r8d,dword[y1]	; coordonnée source en y
-	mov r9d,dword[x2]	; coordonnée destination en x
-	mov r14d,dword[y2]
-	push r14		; coordonnée destination en y
-	call XDrawLine
-	add rsp,8
-; Fin Dessin d'une ligne
-
-; Changer la couleur de dessin
-	mov rdi,qword[display_name]
-	mov rsi,qword[gc]
-	mov edx,0xFFFF00	; Couleur du crayon (jaune)
-	call XSetForeground
-; Fin Change la couleur de dessin
-
-	mov dword[x1],200
-	mov dword[y1],200
-	mov dword[x2],50
-	mov dword[y2],250
-; Dessin d'une ligne
-	mov rdi,qword[display_name]
-	mov rsi,qword[window]
-	mov rdx,qword[gc]
-	mov ecx,dword[x1]	; coordonnée source en x
-	mov r8d,dword[y1]	; coordonnée source en y
-	mov r9d,dword[x2]	; coordonnée destination en x
-	mov r14d,dword[y2]
-	push r14		; coordonnée destination en y
-	call XDrawLine
-	add rsp,8
-; Fin Dessin d'une ligne
-
-; Changer la couleur de dessin
-	mov rdi,qword[display_name]
-	mov rsi,qword[gc]
-	mov edx,0x00FFFF	; Couleur du crayon (cyan)
-	call XSetForeground
-; Fin Change la couleur de dessin
-
-	mov dword[x1],250
-	mov dword[y1],50
-	mov dword[x2],150
-	mov dword[y2],250
-; Dessin d'une ligne
-	mov rdi,qword[display_name]
-	mov rsi,qword[window]
-	mov rdx,qword[gc]
-	mov ecx,dword[x1]	; coordonnée source en x
-	mov r8d,dword[y1]	; coordonnée source en y
-	mov r9d,dword[x2]	; coordonnée destination en x
-	mov r14d,dword[y2]
-	push r14		; coordonnée destination en y
-	call XDrawLine
-	add rsp,8
-; Fin Dessin d'une ligne
+  ; close the hull with the last line to H[0]
+  mov r12d,dword[point_set_H+ebx*DWORD]
+  mov r13d,dword[point_set_H+0*DWORD]
+  call draw_line
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
