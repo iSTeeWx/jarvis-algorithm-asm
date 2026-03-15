@@ -54,6 +54,10 @@ gc:           resq 1
 points_x:     resd POINT_COUNT
 points_y:     resd POINT_COUNT
 
+point_set_H: resd POINT_COUNT
+point_P_i: resd 1
+point_Q_i: resd 1
+
 section .data
 event: times 24 dq 0
 x1: dd 0
@@ -61,11 +65,15 @@ x2: dd 0
 y1: dd 0
 y2: dd 0
 printf_debug: db "point %u: %u %u",10,0
+printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
+printf_debug_jarvis_q: db "point Q is: (i:%u x:%u y:%u)",10,0
 printf_debug_leftmost: db 10,"leftmost point: i=%u x=%u",10,0
 window_title: db "Algorithme de Jarvis",0
 
 leftmost_point_i: dd 0
 leftmost_point_x: dd LARGEUR
+
+point_set_H_i: db 0
 
 section .text
 
@@ -208,6 +216,7 @@ main:
       mov rax,0
       call printf
 
+      ; find the leftmost point
       mov eax,dword[points_x+rbx*DWORD]
       cmp eax,dword[leftmost_point_x]
       jge skip_point
@@ -215,15 +224,67 @@ main:
          mov dword[leftmost_point_i],ebx
       skip_point:
 
+
       inc ebx
       jmp while_init_points
     end_while_init_points:
 
+    ; print the leftmost point and it's index
     mov rdi,printf_debug_leftmost
     mov esi,dword[leftmost_point_i]
     mov edx,dword[leftmost_point_x]
     xor rax,rax
     call printf
+
+    ; Pi <- Li
+    mov eax,dword[leftmost_point_i]
+    mov dword[point_P_i],eax
+
+    while_jarvis:
+      ; add P to H
+      mov eax,dword[point_P_i]
+      mov ecx,dword[point_set_H_i]
+      mov [point_set_H+ecx*DWORD],eax
+
+      ; print the info of the add
+      mov rdi,printf_debug_jarvis_add_p
+      mov esi,dword[point_set_H_i]
+      mov edx,dword[point_P_i]
+      mov ecx,dword[point_P_i]
+      mov ecx,dword[points_x+ecx*DWORD]
+      mov r8d,dword[point_P_i]
+      mov r8d,dword[points_y+r8d*DWORD]
+      xor rax,rax
+      call printf
+
+      ; Q is the point after P in E ( Q=E[P+1] )
+      mov ecx,POINT_COUNT
+      mov eax,dword[point_P_i]
+      inc eax
+      xor edx,edx
+      div ecx ; edx = (Pi+1) % sz
+
+      ; Qi <- Ei[(Pi + 1) % len(E)]
+      ; mov eax,dword[leftmost_point_i]
+      ; mov dword[point_P_i],eax
+      mov dword[point_Q_i],edx
+
+      mov rdi,printf_debug_jarvis_q
+      mov esi,dword[point_Q_i]
+      mov edx,dword[point_Q_i]
+      mov edx,dword[points_x+edx*DWORD]
+      mov ecx,dword[point_Q_i]
+      mov ecx,dword[points_y+ecx*DWORD]
+      xor rax,rax
+      call printf
+
+      mov eax,dword[point_P_i]
+      cmp dword[leftmost_point_i],eax
+      ; TODO: this is the wrong condition, put: jne end_while_jarvis ; P == L
+      je end_while_jarvis ; P == L
+
+      jmp while_jarvis
+    end_while_jarvis:
 	
 boucle: ; Boucle de gestion des événements
     mov     rdi, qword[display_name]
