@@ -76,7 +76,8 @@ get_rand_int:
   popf
   ret
 
-; rbx: the index of the circle to draw
+; draws a circle based on the values stored in points_x points_y
+; param: rbx: the index of the circle to draw
 draw_circle:
   ; Dessin d'un point sous forme de petit rond
   mov rdi,qword[display_name]
