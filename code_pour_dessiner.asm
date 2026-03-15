@@ -14,6 +14,7 @@ extern XDrawPoint
 extern XDrawArc
 extern XFillArc
 extern XNextEvent
+extern XStoreName
 
 extern exit
 
@@ -60,6 +61,7 @@ x2: dd 0
 y1: dd 0
 y2: dd 0
 printf_debug: db "point %u: %u %u",10,0
+window_title: db "Algorithme de Jarvis",0
 
 section .text
 
@@ -131,6 +133,12 @@ main:
 
 	  add rsp,24
 	  mov qword[window],rax           ; Stocke l'identifiant de la fenêtre créée dans window
+
+    ; sets the windows title
+    mov rdi,qword[display_name]
+    mov rsi,qword[window]
+    mov rdx,window_title
+    call XStoreName
 
     ; Sélection des événements à écouter sur la fenêtre
     mov rdi,qword[display_name]
