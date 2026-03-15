@@ -184,15 +184,17 @@ main:
       cmp rbx,POINT_COUNT
       jge end_while_init_points
 
-      mov rcx,LARGEUR                   ; the max of the random
-      call get_rand_int                 ; generate random number
-      jnc end_while_init_points         ; CF=0 so the random value is invalid
-      mov dword[points_x+rbx*DWORD],edx ; store the random value
+      mov rcx,LARGEUR-80                   ; the max of the random (-80 to account for padding)
+      call get_rand_int                    ; generate random number
+      jnc end_while_init_points            ; CF=0 so the random value is invalid
+      add edx,40                           ; left padding
+      mov dword[points_x+rbx*DWORD],edx    ; store the random value
 
-      mov rcx,HAUTEUR                   ; the max of the random
-      call get_rand_int                 ; generate random number
-      jnc end_while_init_points         ; CF=0 so the random value is invalid
-      mov dword[points_y+rbx*DWORD],edx ; store the random value
+      mov rcx,HAUTEUR-80                   ; the max of the random (-80 to account for padding)
+      call get_rand_int                    ; generate random number
+      jnc end_while_init_points            ; CF=0 so the random value is invalid
+      add edx,40                           ; top padding
+      mov dword[points_y+rbx*DWORD],edx    ; store the random value
 
       ; print the point and its index
       mov rdi,printf_debug
