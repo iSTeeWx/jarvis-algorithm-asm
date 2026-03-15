@@ -17,6 +17,8 @@ extern XNextEvent
 
 extern exit
 
+extern printf
+
 %define	StructureNotifyMask	131072
 %define KeyPressMask		1
 %define ButtonPressMask		4
@@ -35,6 +37,8 @@ extern exit
 %define	LARGEUR 400	; largeur en pixels de la fenêtre
 %define HAUTEUR 400	; hauteur en pixels de la fenêtre
 
+%define POINT_COUNT 10
+
 global main
 
 section .bss
@@ -46,6 +50,8 @@ width:        resd 1
 height:       resd 1
 window:       resq 1
 gc:           resq 1
+points_x      resd POINT_COUNT
+points_y      resd POINT_COUNT
 
 section .data
 event: times 24 dq 0
@@ -53,6 +59,7 @@ x1: dd 0
 x2: dd 0
 y1: dd 0
 y2: dd 0
+printf_debug: db "point: %lu %lu",10,0
 
 section .text
 	
@@ -128,6 +135,40 @@ main:
     test rax, rax                ; Vérifie la création du GC
     jz closeDisplay              ; Si échec, quitte
     mov qword[gc], rax           ; Stocke le GC dans la variable gc
+
+
+    mov rbx,0
+    while_init_points:
+      cmp rbx,POINT_COUNT
+      jge end_while_init_points
+
+      rdrand r8
+      jnc end_while_init_points ; CF=0 so the random value is invalid
+
+      rdrand r9
+      jnc end_while_init_points ; CF=0 so the random value is invalid
+
+      mov rax,r8
+      mov r12,LARGEUR
+      xor rdx,rdx
+      div r12
+      mov r12,rdx
+
+      mov rax,r9
+      mov r13,HAUTEUR
+      xor rdx,rdx
+      div r13
+      mov r13,rdx
+
+      mov rdi,printf_debug
+      mov rsi,r12
+      mov rdx,r13
+      mov rax,0
+      call printf
+
+      inc rbx
+      jmp while_init_points
+    end_while_init_points:
 	
 boucle: ; Boucle de gestion des événements
     mov     rdi, qword[display_name]
