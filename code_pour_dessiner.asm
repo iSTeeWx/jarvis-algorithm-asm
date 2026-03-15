@@ -108,20 +108,23 @@ draw_circle:
   ret
 
 ; computes the cross product of AB and BC
-; param: edi: index of point A
-; param: esi: index of point B
-; param: edx: index of point C
+; param: edi: x1
+; param: esi: y1
+; param: edx: x2
+; param: ecx: y2
+; param: r8d: x3
+; param: r9d: y3
 ; return: eax: the cross product
 cross_product:
-  mov eax, dword[points_x+esi*DWORD]
-  mov r12d,dword[points_y+esi*DWORD]
-  mov r13d,dword[points_x+edx*DWORD]
-  mov r14d,dword[points_y+edx*DWORD]
+  mov eax, edx
+  mov r12d,ecx
+  mov r13d,edi
+  mov r14d,esi
 
   sub r14d,r12d
   sub r13d,eax
-  sub r12d,dword[points_y+edi*DWORD]
-  sub eax, dword[points_x+edi*DWORD]
+  sub r12d,r9d
+  sub eax, r8d
 
   mul eax, r14d
   mul r12d,r13d
@@ -318,9 +321,15 @@ main:
       je continue_foreach_i
 
       ; get the winding direction of triangle PIQ
-      mov edi,dword[point_Pi]
-      mov esi,dword[point_Ii]
-      mov edx,dword[point_Qi]
+      mov eax,dword[point_Pi]
+      mov edi,dword[points_x+eax*DWORD]
+      mov esi,dword[points_y+eax*DWORD]
+      mov eax,dword[point_Qi]
+      mov edx,dword[points_x+eax*DWORD]
+      mov ecx,dword[points_y+eax*DWORD]
+      mov eax,dword[point_Ii]
+      mov r8d,dword[points_x+eax*DWORD]
+      mov r9d,dword[points_y+eax*DWORD]
       call cross_product
     
       ; if the triangle goes clockwise
