@@ -65,6 +65,17 @@ window_title: db "Algorithme de Jarvis",0
 
 section .text
 
+; gets a random integer between 0 and rcx
+; param: rcx: the max of the rand
+; return: rdx: the generated integer
+get_rand_int:
+  rdrand rax
+  pushf
+  xor rdx,rdx
+  div rcx
+  popf
+  ret
+
 ; rbx: the index of the circle to draw
 draw_circle:
   ; Dessin d'un point sous forme de petit rond
@@ -173,27 +184,15 @@ main:
       cmp rbx,POINT_COUNT
       jge end_while_init_points
 
-      ; generate random number
-      rdrand r8
-      jnc end_while_init_points ; CF=0 so the random value is invalid
+      mov rcx,LARGEUR                   ; the max of the random
+      call get_rand_int                 ; generate random number
+      jnc end_while_init_points         ; CF=0 so the random value is invalid
+      mov qword[points_x+rbx*DWORD],rdx ; store the random value
 
-      ; generate random number
-      rdrand r9
-      jnc end_while_init_points ; CF=0 so the random value is invalid
-
-      ; store random % width in an array
-      mov rax,r8
-      mov rcx,LARGEUR
-      xor rdx,rdx
-      div rcx
-      mov qword[points_x+rbx*DWORD],rdx
-
-      ; store random % height in an array
-      mov rax,r9
-      mov rcx,HAUTEUR
-      xor rdx,rdx
-      div rcx
-      mov qword[points_y+rbx*DWORD],rdx
+      mov rcx,HAUTEUR                   ; the max of the random
+      call get_rand_int                 ; generate random number
+      jnc end_while_init_points         ; CF=0 so the random value is invalid
+      mov qword[points_y+rbx*DWORD],rdx ; store the random value
 
       ; print the point and its index
       mov rdi,printf_debug
