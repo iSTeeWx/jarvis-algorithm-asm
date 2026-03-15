@@ -38,7 +38,7 @@ extern printf
 %define	LARGEUR 400	; largeur en pixels de la fenêtre
 %define HAUTEUR 400	; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 4
+%define POINT_COUNT 3
 
 global main
 
@@ -117,6 +117,29 @@ draw_circle:
   ; Fin de dessin d'un point sous forme de petit rond
   ret
 	
+; computes the cross product of AB and BC
+; param: edi: index of point A
+; param: esi: index of point B
+; param: edx: index of point C
+; return: eax: the cross product
+cross_product:
+  mov eax,dword[points_x+esi*DWORD]
+  mov r12d,dword[points_y+esi*DWORD]
+  mov r13d,dword[points_x+edx*DWORD]
+  mov r14d,dword[points_y+edx*DWORD]
+
+  sub r14d,r12d
+  sub r13d,eax
+  sub r12d,dword[points_y+edi*DWORD]
+  sub eax,dword[points_x+edi*DWORD]
+
+  mul eax,r14d
+  mul r12d,r13d
+
+  sub eax,r12d
+
+  ret
+
 ;##################################################
 ;########### PROGRAMME PRINCIPAL ##################
 ;##################################################
@@ -303,41 +326,13 @@ main:
         xor rax,rax
         call printf
 
-        ; r10b=Xi
-        ; r11b=Yi
-        ; r12b=Xq
-        ; r13b=Yq
-        ; 
-        ; r13b-=r11b
-        ; r12b-=r10b
-        ; r11b-=Yp
-        ; r10b-=Xp
-        ; 
-        ; r10b *= r13b
-        ; r11b *= r12b
-        ; 
-        ; r11b -= r10b
-
-        mov eax,dword[point_Ii]
-        mov r10d,dword[points_x+eax*DWORD]
-        mov r11d,dword[points_y+eax*DWORD]
-        mov eax,dword[point_Qi]
-        mov r12d,dword[points_x+eax*DWORD]
-        mov r13d,dword[points_y+eax*DWORD]
-
-        sub r13d,r11d
-        sub r12d,r10d
-        mov eax,dword[point_Pi]
-        sub r11d,dword[points_y+eax*DWORD]
-        sub r10d,dword[points_x+eax*DWORD]
-
-        mul r10d,r13d
-        mul r11d,r12d
-        
-        sub r10d,r11d
+        mov edi,dword[point_Pi]
+        mov esi,dword[point_Ii]
+        mov edx,dword[point_Qi]
+        call cross_product
 
         mov rdi,printf_debug_cross_product
-        mov esi,r11d
+        mov esi,eax
         xor rax,rax
         call printf
 
