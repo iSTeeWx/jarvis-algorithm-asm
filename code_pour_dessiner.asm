@@ -38,7 +38,7 @@ extern printf
 %define	LARGEUR 400	; largeur en pixels de la fenêtre
 %define HAUTEUR 400	; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 5
+%define POINT_COUNT 4
 
 global main
 
@@ -71,6 +71,7 @@ printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
 printf_debug_jarvis_q: db "point Q is: (i:%u x:%u y:%u)",10,0
 printf_debug_leftmost: db 10,"leftmost point: i=%u x=%u",10,0
 printf_debug_point_i: db "point I: %u",10,0
+printf_debug_cross_product: db "cross product of PI and IQ: %d",10,0
 
 window_title: db "Algorithme de Jarvis",0
 
@@ -302,20 +303,43 @@ main:
         xor rax,rax
         call printf
 
-        ; r10b=Xb
-        ; r11b=Yb
-        ; r12b=Xc
-        ; r13b=Yc
+        ; r10b=Xi
+        ; r11b=Yi
+        ; r12b=Xq
+        ; r13b=Yq
         ; 
         ; r13b-=r11b
         ; r12b-=r10b
-        ; r11b-=Ya
-        ; r10b-=Xa
+        ; r11b-=Yp
+        ; r10b-=Xp
         ; 
         ; r10b *= r13b
         ; r11b *= r12b
         ; 
         ; r11b -= r10b
+
+        mov eax,dword[point_Ii]
+        mov r10d,dword[points_x+eax*DWORD]
+        mov r11d,dword[points_y+eax*DWORD]
+        mov eax,dword[point_Qi]
+        mov r12d,dword[points_x+eax*DWORD]
+        mov r13d,dword[points_y+eax*DWORD]
+
+        sub r13d,r11d
+        sub r12d,r10d
+        mov eax,dword[point_Pi]
+        sub r11d,dword[points_y+eax*DWORD]
+        sub r10d,dword[points_x+eax*DWORD]
+
+        mul r10d,r13d
+        mul r11d,r12d
+        
+        sub r10d,r11d
+
+        mov rdi,printf_debug_cross_product
+        mov esi,r11d
+        xor rax,rax
+        call printf
 
         continue_foreach_i:
         inc dword[point_Ii]
