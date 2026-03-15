@@ -19,7 +19,6 @@ extern XStoreName
 extern exit
 
 extern printf
-extern puts
 
 %define	StructureNotifyMask	131072
 %define KeyPressMask		1
@@ -62,7 +61,6 @@ x2: dd 0
 y1: dd 0
 y2: dd 0
 printf_debug: db "point %u: %u %u",10,0
-puts_newline: db "",0
 window_title: db "Algorithme de Jarvis",0
 
 section .text
@@ -80,14 +78,6 @@ get_rand_int:
 
 ; rbx: the index of the circle to draw
 draw_circle:
-  ; print the point and its index
-  mov rdi,printf_debug
-  mov esi,ebx
-  mov edx,dword[points_x+rbx*DWORD]
-  mov ecx,dword[points_y+rbx*DWORD]
-  mov rax,0
-  call printf
-
   ; Dessin d'un point sous forme de petit rond
   mov rdi,qword[display_name]
   mov rsi,qword[window]
@@ -188,7 +178,6 @@ main:
     jz closeDisplay              ; Si échec, quitte
     mov qword[gc], rax           ; Stocke le GC dans la variable gc
 
-
     mov rbx,0
     while_init_points:
       cmp rbx,POINT_COUNT
@@ -197,12 +186,20 @@ main:
       mov rcx,LARGEUR                   ; the max of the random
       call get_rand_int                 ; generate random number
       jnc end_while_init_points         ; CF=0 so the random value is invalid
-      mov qword[points_x+rbx*DWORD],rdx ; store the random value
+      mov dword[points_x+rbx*DWORD],edx ; store the random value
 
       mov rcx,HAUTEUR                   ; the max of the random
       call get_rand_int                 ; generate random number
       jnc end_while_init_points         ; CF=0 so the random value is invalid
-      mov qword[points_y+rbx*DWORD],rdx ; store the random value
+      mov dword[points_y+rbx*DWORD],edx ; store the random value
+
+      ; print the point and its index
+      mov rdi,printf_debug
+      mov esi,ebx
+      mov edx,dword[points_x+rbx*DWORD]
+      mov ecx,dword[points_y+rbx*DWORD]
+      mov rax,0
+      call printf
 
       inc rbx
       jmp while_init_points
@@ -335,10 +332,6 @@ dessin:
     inc rbx
     jmp while_draw_points
   end_while_draw_points:
-
-  mov rdi,puts_newline
-  xor rax,rax
-  call puts
 
 ; ############################
 ; # FIN DE LA ZONE DE DESSIN #
