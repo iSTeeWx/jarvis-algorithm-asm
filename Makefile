@@ -1,6 +1,6 @@
 .PHONY: run all
 
-ASMFILE=code_pour_dessiner
+ASMFILE=jarvis
 
 all: run
 
