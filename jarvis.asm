@@ -38,7 +38,7 @@ extern printf
 %define LARGEUR             400 ; largeur en pixels de la fenêtre
 %define HAUTEUR             400 ; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 3
+%define POINT_COUNT 30
 
 global main
 
@@ -390,21 +390,16 @@ main:
     cmp ebx,eax
     jge end_while_test_point
 
-    ; eax : index of H+1
-    ; ebx : index of H
-    ; r12 : H[ebx]
-    ; r13 : H[ebx + 1]
-    mov eax,ebx
-    inc eax
-    mov r12d,dword[point_set_H+ebx*DWORD]
-    mov r13d,dword[point_set_H+eax*DWORD]
-
-    mov edi,dword[points_x+r12d*DWORD]
-    mov esi,dword[points_y+r12d*DWORD]
+    ; cross product of H[i], H[i+1] and test_point
+    mov eax,dword[point_set_H+ebx*DWORD]
+    mov edi,dword[points_x+eax*DWORD]
+    mov esi,dword[points_y+eax*DWORD]
     mov edx,dword[point_test_x]
     mov ecx,dword[point_test_y]
-    mov r8d,dword[points_x+r13d*DWORD]
-    mov r9d,dword[points_y+r13d*DWORD]
+    inc ebx
+    mov eax,dword[point_set_H+ebx*DWORD]
+    mov r8d,dword[points_x+eax*DWORD]
+    mov r9d,dword[points_y+eax*DWORD]
     call cross_product
 
     ; if rax < 0 point_f = 1
@@ -413,20 +408,20 @@ main:
       mov dword[point_test_f],1
     skip_set_f_loop:
 
-    inc ebx
     jmp while_test_point
   end_while_test_point:
 
-  ; close the hull with the last line to H[0]
-  mov r12d,dword[point_set_H+ebx*DWORD]
-  mov r13d,dword[point_set_H+0*DWORD]
+  ; cross product of H[len(H) - 1], H[0] and test_point
+  mov eax,dword[point_set_H+ebx*DWORD]
+  mov edi,dword[points_x+eax*DWORD]
+  mov esi,dword[points_y+eax*DWORD]
 
-  mov edi,dword[points_x+r12d*DWORD]
-  mov esi,dword[points_y+r12d*DWORD]
   mov edx,dword[point_test_x]
   mov ecx,dword[point_test_y]
-  mov r8d,dword[points_x+r13d*DWORD]
-  mov r9d,dword[points_y+r13d*DWORD]
+
+  mov eax,dword[point_set_H]
+  mov r8d,dword[points_x+eax*DWORD]
+  mov r9d,dword[points_y+eax*DWORD]
   call cross_product
 
   ; if rax < 0 point_f = 1
@@ -435,9 +430,24 @@ main:
     mov dword[point_test_f],1
   skip_set_f:
 
-  mov rdi,printf_debug_not_in_hull
-  mov esi,dword[point_test_f]
+  ; position of point_test for printf
+  mov esi,dword[point_test_x]
+  mov edx,dword[point_test_y]
   xor rax,rax
+
+  ; if point_test_f ? not in hull : in hull
+  cmp dword[point_test_f],1
+  je print_not_in_hull
+
+    mov rdi,printf_point_in_hull
+
+    jmp end_print_not_in_hull
+  print_not_in_hull:
+
+    mov rdi,printf_point_not_in_hull
+
+  end_print_not_in_hull:
+
   call printf
 
   boucle: ; Boucle de gestion des événements
