@@ -144,16 +144,16 @@ cross_product:
   ret
 
 ; draw a line between two point indices
-; param: r12: index of first point
-; param: r13: index of second point
+; param: rdi: index of first point
+; param: rsi: index of second point
 draw_line:
+  mov ecx, dword[points_x+rdi*DWORD] ; coordonnée source en x
+  mov r8d, dword[points_y+rdi*DWORD] ; coordonnée source en y
+  mov r9d, dword[points_x+rsi*DWORD] ; coordonnée destination en x
+  mov r14d,dword[points_y+rsi*DWORD]
   mov rdi, qword[display_name]
   mov rsi, qword[window]
   mov rdx, qword[gc]
-  mov ecx, dword[points_x+r12d*DWORD] ; coordonnée source en x
-  mov r8d, dword[points_y+r12d*DWORD] ; coordonnée source en y
-  mov r9d, dword[points_x+r13d*DWORD] ; coordonnée destination en x
-  mov r14d,dword[points_y+r13d*DWORD]
   push r14                            ; coordonnée destination en y
   call XDrawLine
   add rsp,8
@@ -481,8 +481,8 @@ dessin:
     ; r13 : H[ebx + 1]
     mov eax,ebx
     inc eax
-    mov r12d,dword[point_set_H+ebx*DWORD]
-    mov r13d,dword[point_set_H+eax*DWORD]
+    movsx rdi,dword[point_set_H+ebx*DWORD]
+    movsx rsi,dword[point_set_H+eax*DWORD]
     call draw_line
 
     inc ebx
@@ -490,8 +490,8 @@ dessin:
   end_while_draw_lines:
 
   ; close the hull with the last line to H[0]
-  mov r12d,dword[point_set_H+ebx*DWORD]
-  mov r13d,dword[point_set_H+0*DWORD]
+  movsx rdi,dword[point_set_H+ebx*DWORD]
+  movsx rsi,dword[point_set_H+0*DWORD]
   call draw_line
 
   ; draw every point
