@@ -68,8 +68,7 @@ event: times 24 dq 0
 printf_debug:              db "point %u: %u %u",10,0
 printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
 printf_debug_leftmost:     db 10,"leftmost point: i=%u x=%u",10,0
-printf_debug_test_cross:   db 10,"(%u,%u) %d",10,0
-printf_debug_hhu:          db "%hhu",10,0
+printf_debug_not_in_hull:  db 10,"not in hull: %d",10,0
 
 printf_point_in_hull:      db 10,"Le point (%u,%u) est contenu dans l'enveloppe",10,0
 printf_point_not_in_hull:  db 10,"Le point (%u,%u) n'est pas contenu dans l'enveloppe",10,0
@@ -78,7 +77,7 @@ window_title: db "Algorithme de Jarvis",0
 
 leftmost_point_i: dd 0
 leftmost_point_x: dd LARGEUR
-point_set_H_i: db 0
+point_set_H_i: dd 0
 
 point_test_f: dd 0
 
@@ -436,18 +435,10 @@ dessin:
     call cross_product
 
     ; if rax < 0 point_f = 1
-    cmp rax,0
+    cmp eax,0
     jge skip_set_f_loop
-      int3
       mov dword[point_test_f],1
     skip_set_f_loop:
-
-    mov rdi,printf_debug_test_cross
-    mov esi,dword[point_test_x]
-    mov edx,dword[point_test_y]
-    mov ecx,eax
-    xor rax,rax
-    call printf
 
     inc ebx
     jmp while_draw_lines
@@ -469,12 +460,12 @@ dessin:
   ; if rax < 0 point_f = 1
 
   ; if rax < 0 point_f = 1
-  cmp rax,0
+  cmp eax,0
   jge skip_set_f
     mov dword[point_test_f],1
   skip_set_f:
 
-  mov rdi,printf_debug_hhu
+  mov rdi,printf_debug_not_in_hull
   mov esi,dword[point_test_f]
   xor rax,rax
   call printf
