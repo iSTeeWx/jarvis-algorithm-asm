@@ -381,6 +381,65 @@ main:
     jmp while_jarvis
   end_while_jarvis:
 
+  ; draw lines between all points of H
+  xor ebx,ebx
+  while_test_point:
+    ; stop when ebx >= len(H) - 1
+    mov eax,dword[point_set_H_i]
+    dec eax
+    cmp ebx,eax
+    jge end_while_test_point
+
+    ; eax : index of H+1
+    ; ebx : index of H
+    ; r12 : H[ebx]
+    ; r13 : H[ebx + 1]
+    mov eax,ebx
+    inc eax
+    mov r12d,dword[point_set_H+ebx*DWORD]
+    mov r13d,dword[point_set_H+eax*DWORD]
+
+    mov edi,dword[points_x+r12d*DWORD]
+    mov esi,dword[points_y+r12d*DWORD]
+    mov edx,dword[point_test_x]
+    mov ecx,dword[point_test_y]
+    mov r8d,dword[points_x+r13d*DWORD]
+    mov r9d,dword[points_y+r13d*DWORD]
+    call cross_product
+
+    ; if rax < 0 point_f = 1
+    cmp eax,0
+    jge skip_set_f_loop
+      mov dword[point_test_f],1
+    skip_set_f_loop:
+
+    inc ebx
+    jmp while_test_point
+  end_while_test_point:
+
+  ; close the hull with the last line to H[0]
+  mov r12d,dword[point_set_H+ebx*DWORD]
+  mov r13d,dword[point_set_H+0*DWORD]
+
+  mov edi,dword[points_x+r12d*DWORD]
+  mov esi,dword[points_y+r12d*DWORD]
+  mov edx,dword[point_test_x]
+  mov ecx,dword[point_test_y]
+  mov r8d,dword[points_x+r13d*DWORD]
+  mov r9d,dword[points_y+r13d*DWORD]
+  call cross_product
+
+  ; if rax < 0 point_f = 1
+  cmp eax,0
+  jge skip_set_f
+    mov dword[point_test_f],1
+  skip_set_f:
+
+  mov rdi,printf_debug_not_in_hull
+  mov esi,dword[point_test_f]
+  xor rax,rax
+  call printf
+
   boucle: ; Boucle de gestion des événements
     mov     rdi, qword[display_name]
     cmp     rdi, 0              ; Vérifie que le display est toujours valide
@@ -426,20 +485,6 @@ dessin:
     mov r13d,dword[point_set_H+eax*DWORD]
     call draw_line
 
-    mov edi,dword[points_x+r12d*DWORD]
-    mov esi,dword[points_y+r12d*DWORD]
-    mov edx,dword[point_test_x]
-    mov ecx,dword[point_test_y]
-    mov r8d,dword[points_x+r13d*DWORD]
-    mov r9d,dword[points_y+r13d*DWORD]
-    call cross_product
-
-    ; if rax < 0 point_f = 1
-    cmp eax,0
-    jge skip_set_f_loop
-      mov dword[point_test_f],1
-    skip_set_f_loop:
-
     inc ebx
     jmp while_draw_lines
   end_while_draw_lines:
@@ -448,27 +493,6 @@ dessin:
   mov r12d,dword[point_set_H+ebx*DWORD]
   mov r13d,dword[point_set_H+0*DWORD]
   call draw_line
-
-  mov edi,dword[points_x+r12d*DWORD]
-  mov esi,dword[points_y+r12d*DWORD]
-  mov edx,dword[point_test_x]
-  mov ecx,dword[point_test_y]
-  mov r8d,dword[points_x+r13d*DWORD]
-  mov r9d,dword[points_y+r13d*DWORD]
-  call cross_product
-
-  ; if rax < 0 point_f = 1
-
-  ; if rax < 0 point_f = 1
-  cmp eax,0
-  jge skip_set_f
-    mov dword[point_test_f],1
-  skip_set_f:
-
-  mov rdi,printf_debug_not_in_hull
-  mov esi,dword[point_test_f]
-  xor rax,rax
-  call printf
 
   ; draw every point
   xor rbx,rbx
