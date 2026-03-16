@@ -514,7 +514,7 @@ dessin:
   mov edx,0xFF0000 ; black
   call XSetForeground
 
-  ; le point que l'on souhaite tester
+  ; draw the test point
   mov edi,dword[point_test_x]
   mov esi,dword[point_test_y]
   call draw_circle
