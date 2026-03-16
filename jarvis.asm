@@ -1,3 +1,5 @@
+DEFAULT REL
+
 ; external functions from X11 library
 extern XOpenDisplay
 extern XDisplayName
