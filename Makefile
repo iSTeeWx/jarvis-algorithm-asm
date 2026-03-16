@@ -1,4 +1,4 @@
-.PHONY: run all
+.PHONY: run all clean
 
 ASMFILE=jarvis
 
