@@ -38,7 +38,7 @@ extern printf
 %define LARGEUR             400 ; largeur en pixels de la fenêtre
 %define HAUTEUR             400 ; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 30
+%define POINT_COUNT 40
 
 global main
 
@@ -65,13 +65,13 @@ point_test_y: resd 1
 section .data
 event: times 24 dq 0
 
-printf_debug:              db "point %u: %u %u",10,0
-printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
-printf_debug_leftmost:     db 10,"leftmost point: i=%u x=%u",10,0
-printf_debug_not_in_hull:  db 10,"not in hull: %d",10,0
+;printf_debug:              db "point %u: %u %u",10,0
+;printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
+;printf_debug_leftmost:     db 10,"leftmost point: i=%u x=%u",10,0
+;printf_debug_not_in_hull:  db 10,"not in hull: %d",10,0
 
-printf_point_in_hull:      db 10,"Le point (%u,%u) est contenu dans l'enveloppe",10,0
-printf_point_not_in_hull:  db 10,"Le point (%u,%u) n'est pas contenu dans l'enveloppe",10,0
+printf_point_in_hull:      db "Le point (%u,%u) est contenu dans l'enveloppe",10,0
+printf_point_not_in_hull:  db "Le point (%u,%u) n'est pas contenu dans l'enveloppe",10,0
 
 window_title: db "Algorithme de Jarvis",0
 
@@ -259,12 +259,12 @@ main:
     mov dword[points_y+rbx*DWORD],edx    ; store the random value
 
     ; print the point and its index
-    mov rdi,printf_debug
-    mov esi,ebx
-    mov edx,dword[points_x+rbx*DWORD]
-    mov ecx,dword[points_y+rbx*DWORD]
-    mov rax,0
-    call printf
+    ; mov rdi,printf_debug
+    ; mov esi,ebx
+    ; mov edx,dword[points_x+rbx*DWORD]
+    ; mov ecx,dword[points_y+rbx*DWORD]
+    ; mov rax,0
+    ; call printf
 
     ; find the leftmost point
     mov eax,dword[points_x+rbx*DWORD]
@@ -292,11 +292,11 @@ main:
     mov dword[point_test_y],edx          ; store the random value
 
   ; print the leftmost point and it's index
-  mov rdi,printf_debug_leftmost
-  mov esi,dword[leftmost_point_i]
-  mov edx,dword[leftmost_point_x]
-  xor rax,rax
-  call printf
+  ; mov rdi,printf_debug_leftmost
+  ; mov esi,dword[leftmost_point_i]
+  ; mov edx,dword[leftmost_point_x]
+  ; xor rax,rax
+  ; call printf
 
   ; Pi <- Li
   mov eax,dword[leftmost_point_i]
@@ -309,15 +309,15 @@ main:
     mov [point_set_H+ecx*DWORD],eax
 
     ; print the info of the add
-    mov rdi,printf_debug_jarvis_add_p
-    mov esi,dword[point_set_H_i]
-    mov edx,dword[point_Pi]
-    mov ecx,dword[point_Pi]
-    mov ecx,dword[points_x+ecx*DWORD]
-    mov r8d,dword[point_Pi]
-    mov r8d,dword[points_y+r8d*DWORD]
-    xor rax,rax
-    call printf
+    ; mov rdi,printf_debug_jarvis_add_p
+    ; mov esi,dword[point_set_H_i]
+    ; mov edx,dword[point_Pi]
+    ; mov ecx,dword[point_Pi]
+    ; mov ecx,dword[points_x+ecx*DWORD]
+    ; mov r8d,dword[point_Pi]
+    ; mov r8d,dword[points_y+r8d*DWORD]
+    ; xor rax,rax
+    ; call printf
 
     ; Q is the point after P in E ( Q=E[P+1] )
     mov ecx,POINT_COUNT
