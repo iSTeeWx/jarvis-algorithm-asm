@@ -38,7 +38,7 @@ extern printf
 %define LARGEUR             400 ; largeur en pixels de la fenêtre
 %define HAUTEUR             400 ; hauteur en pixels de la fenêtre
 
-%define POINT_COUNT 100
+%define POINT_COUNT 3
 
 global main
 
@@ -59,18 +59,28 @@ point_Pi:    resd 1
 point_Qi:    resd 1
 point_Ii:    resd 1
 
+point_test_x: resd 1
+point_test_y: resd 1
+
 section .data
 event: times 24 dq 0
 
 printf_debug:              db "point %u: %u %u",10,0
 printf_debug_jarvis_add_p: db "point at H[%u]: (i:%u x:%u y:%u)",10,0
 printf_debug_leftmost:     db 10,"leftmost point: i=%u x=%u",10,0
+printf_debug_test_cross:   db 10,"(%u,%u) %d",10,0
+printf_debug_hhu:          db "%hhu",10,0
+
+printf_point_in_hull:      db 10,"Le point (%u,%u) est contenu dans l'enveloppe",10,0
+printf_point_not_in_hull:  db 10,"Le point (%u,%u) n'est pas contenu dans l'enveloppe",10,0
 
 window_title: db "Algorithme de Jarvis",0
 
 leftmost_point_i: dd 0
 leftmost_point_x: dd LARGEUR
 point_set_H_i: db 0
+
+point_test_f: dd 0
 
 section .text
 
@@ -269,6 +279,19 @@ main:
     jmp while_init_points
   end_while_init_points:
 
+  try_get_random_point:
+    ; put a random int in point_test_x
+    mov rcx,LARGEUR                      ; the max of the random
+    call get_rand_int                    ; generate random number
+    jnc try_get_random_point             ; CF=0 so the random value is invalid
+    mov dword[point_test_x],edx          ; store the random value
+
+    ; put a random int in point_test_y
+    mov rcx,HAUTEUR                      ; the max of the random
+    call get_rand_int                    ; generate random number
+    jnc try_get_random_point             ; CF=0 so the random value is invalid
+    mov dword[point_test_y],edx          ; store the random value
+
   ; print the leftmost point and it's index
   mov rdi,printf_debug_leftmost
   mov esi,dword[leftmost_point_i]
@@ -404,6 +427,28 @@ dessin:
     mov r13d,dword[point_set_H+eax*DWORD]
     call draw_line
 
+    mov edi,dword[points_x+r12d*DWORD]
+    mov esi,dword[points_y+r12d*DWORD]
+    mov edx,dword[point_test_x]
+    mov ecx,dword[point_test_y]
+    mov r8d,dword[points_x+r13d*DWORD]
+    mov r9d,dword[points_y+r13d*DWORD]
+    call cross_product
+
+    ; if rax < 0 point_f = 1
+    cmp rax,0
+    jge skip_set_f_loop
+      int3
+      mov dword[point_test_f],1
+    skip_set_f_loop:
+
+    mov rdi,printf_debug_test_cross
+    mov esi,dword[point_test_x]
+    mov edx,dword[point_test_y]
+    mov ecx,eax
+    xor rax,rax
+    call printf
+
     inc ebx
     jmp while_draw_lines
   end_while_draw_lines:
@@ -412,6 +457,27 @@ dessin:
   mov r12d,dword[point_set_H+ebx*DWORD]
   mov r13d,dword[point_set_H+0*DWORD]
   call draw_line
+
+  mov edi,dword[points_x+r12d*DWORD]
+  mov esi,dword[points_y+r12d*DWORD]
+  mov edx,dword[point_test_x]
+  mov ecx,dword[point_test_y]
+  mov r8d,dword[points_x+r13d*DWORD]
+  mov r9d,dword[points_y+r13d*DWORD]
+  call cross_product
+
+  ; if rax < 0 point_f = 1
+
+  ; if rax < 0 point_f = 1
+  cmp rax,0
+  jge skip_set_f
+    mov dword[point_test_f],1
+  skip_set_f:
+
+  mov rdi,printf_debug_hhu
+  mov esi,dword[point_test_f]
+  xor rax,rax
+  call printf
 
   ; draw every point
   xor rbx,rbx
@@ -426,6 +492,18 @@ dessin:
     inc rbx
     jmp while_draw_points
   end_while_draw_points:
+
+  ; Changer la couleur de dessin
+  mov rdi,qword[display_name]
+  mov rsi,qword[gc]
+  mov edx,0xFF0000 ; black
+  call XSetForeground
+
+  ; le point que l'on souhaite tester
+  mov edi,dword[point_test_x]
+  mov esi,dword[point_test_y]
+  call draw_circle
+
 
 
 ; ############################
