@@ -475,17 +475,13 @@ dessin:
     cmp ebx,eax
     jge end_while_draw_lines
 
-    ; eax : index of H+1
-    ; ebx : index of H
-    ; r12 : H[ebx]
-    ; r13 : H[ebx + 1]
-    mov eax,ebx
-    inc eax
+    ; point at ebx
     movsx rdi,dword[point_set_H+ebx*DWORD]
-    movsx rsi,dword[point_set_H+eax*DWORD]
+    inc ebx
+    ; point at ebx + 1
+    movsx rsi,dword[point_set_H+ebx*DWORD]
     call draw_line
 
-    inc ebx
     jmp while_draw_lines
   end_while_draw_lines:
 
