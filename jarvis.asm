@@ -10,8 +10,6 @@ extern XFlush
 extern XCreateGC
 extern XSetForeground
 extern XDrawLine
-extern XDrawPoint
-extern XDrawArc
 extern XFillArc
 extern XNextEvent
 extern XStoreName
@@ -20,20 +18,11 @@ extern exit
 
 extern printf
 
-%define StructureNotifyMask 131072
-%define KeyPressMask        1
-%define ButtonPressMask     4
-%define MapNotify           19
 %define KeyPress            2
-%define ButtonPress         4
-%define Expose              12
 %define ConfigureNotify     22
-%define CreateNotify        16
 %define QWORD               8
 %define DWORD               4
 %define WORD                2
-%define BYTE                1
-%define NBTRI               1
 %define BYTE                1
 %define LARGEUR             400 ; largeur en pixels de la fenêtre
 %define HAUTEUR             400 ; hauteur en pixels de la fenêtre
@@ -45,10 +34,6 @@ global main
 section .bss
 display_name: resq 1
 screen:       resd 1
-depth:        resd 1
-connection:   resd 1
-width:        resd 1
-height:       resd 1
 window:       resq 1
 gc:           resq 1
 
@@ -197,8 +182,8 @@ main:
   mov  rcx,10                  ; position y de la fenêtre
   mov  r8,LARGEUR              ; largeur de la fenêtre
   mov  r9,HAUTEUR              ; hauteur de la fenêtre
-  push 0xFFFFFF                ; couleur du fond (noir, 0x000000)
-  push 0x00FF00                ; couleur de fond (vert, 0x00FF00)
+  push 0xFFFFFF                ; couleur du fond (blanc)
+  push 0x00FF00                ; couleur de bord (vert)
   push 1                       ; épaisseur du bord
   call XCreateSimpleWindow     ; Appel de XCreateSimpleWindow
 
