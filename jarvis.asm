@@ -105,28 +105,25 @@ draw_circle:
   ret
 
 ; computes the cross product of AB and BC
-; param: edi: x1
-; param: esi: y1
-; param: edx: x2
-; param: ecx: y2
-; param: r8d: x3
-; param: r9d: y3
-; return: eax: the cross product
+; param: rdi: Xa
+; param: rsi: Ya
+; param: rdx: Xb
+; param: rcx: Yb
+; param: r8:  Xc
+; param: r9:  Yc
+; return: rax: the cross product
 cross_product:
-  mov eax, edx
-  mov r12d,ecx
-  mov r13d,edi
-  mov r14d,esi
+  sub r9, rcx
+  sub r8, rdx
+  sub rcx,rsi
+  sub rdx,rdi
 
-  sub r14d,r12d
-  sub r13d,eax
-  sub r12d,r9d
-  sub eax, r8d
+  imul r8,rcx
+  imul r9,rdx
 
-  mul eax, r14d
-  mul r12d,r13d
+  sub r8,r9
 
-  sub eax,r12d
+  mov rax,r8
 
   ret
 
@@ -343,7 +340,7 @@ main:
       call cross_product
     
       ; if the triangle goes clockwise
-      cmp eax,0
+      cmp rax,0
       jle continue_foreach_i
         ; Q <- I
         mov edx,dword[point_Ii]
@@ -390,7 +387,7 @@ main:
     call cross_product
 
     ; if rax < 0 point_f = 1
-    cmp eax,0
+    cmp rax,0
     jge skip_set_f_loop
       mov dword[point_test_f],1
     skip_set_f_loop:
@@ -412,7 +409,7 @@ main:
   call cross_product
 
   ; if rax < 0 point_f = 1
-  cmp eax,0
+  cmp rax,0
   jge skip_set_f
     mov dword[point_test_f],1
   skip_set_f:
